@@ -120,16 +120,51 @@ def renew(sess_id, session, user_id, user_name, user_province, home = 0) -> bool
 
     url = "http://e-report.neu.edu.cn/api/notes"
 
-    #json参数拼接
-    data =  urllib.parse.quote('{"_token":"' + sess_id + '","jibenxinxi_shifoubenrenshangbao":"1"'
-    + ',"profile":{"xuegonghao":"' + user_id + '","xingming":"' + user_name + '","suoshubanji":"' + user_class + '"},"jiankangxinxi_muqianshentizhuangkuang":"正常",'
-    + '"xingchengxinxi_weizhishifouyoubianhua":"0","cross_city":"无","qitashixiang_qitaxuyaoshuomingdeshixiang":"","credits":"' + credits + '",'
-    + '"bmap_position":"{\"accuracy\":null,\"altitude\":null,\"altitudeAccuracy\":null,\"heading\":null,\"latitude\":\"' + ('41.65375230' if home == 0 else  MAP_LAT) + '\",'
-    + '\"longitude\":\"' + ('123.42235582' if home == 0 else MAP_LON) + '\",\"speed\":null,\"timestamp\":null,'
-    + '\"point\":{\"lng\":' + ('123.42235582' if home == 0 else MAP_LON) + ',\"lat\":' + ('41.65375230' if home == 0 else MAP_LAT) + ',\"of\":\"inner\"},\"address\":{\"city\":\"\",\"city_code\":0,\"district\":\"\",'
-    + '\"province\":\"' + ('辽宁省' if home == 0 else user_province) + '\",\"street\":\"\",\"street_number\":\"\"}}","bmap_position_latitude":"' + ('41.65375230' if home == 0 else MAP_LAT) + '",'
-    + '"bmap_position_longitude":"' + ('123.42235582' if home == 0 else MAP_LON) + '","bmap_position_address":"' + ('辽宁省' if home == 0 else user_province) + ',","bmap_position_status":"0",'
-    + '"ProvinceCode":"' + ('210000' if home == 0 else get_province_code(user_province)) + '","CityCode":"","travels":[]}')
+    #json参数拼接   
+    data = {
+        "_token": sess_id,
+        "jibenxinxi_shifoubenrenshangbao": "1",
+        "profile": {
+            "xuegonghao": user_id,
+            "xingming": user_name,
+            "suoshubanji": user_class
+            },
+        "jiankangxinxi_muqianshentizhuangkuang":"正常",
+        "xingchengxinxi_weizhishifouyoubianhua":"0",
+        "cross_city":"无",
+        "qitashixiang_qitaxuyaoshuomingdeshixiang":"",
+        "credits": credits,
+        "bmap_position": json.dumps({
+            "accuracy": None,
+            "altitude": None,
+            "altitudeAccuracy": None,
+            "heading": None,
+            "latitude": ('41.65375230' if home == 0 else  MAP_LAT),
+            "longitude": ('123.42235582' if home == 0 else MAP_LON),
+            "speed": None,
+            "timestamp": None,
+            "point":{
+                "lng": ('123.42235582' if home == 0 else MAP_LON),
+                "lat": ('41.65375230' if home == 0 else MAP_LAT),
+                "of": "inner"
+            },
+            "address":{
+                "city": "",
+                "city_code": 0,
+                "district": "",
+                "province":  ('辽宁省' if home == 0 else user_province),
+                "street":"",
+                "street_number": ""
+            }
+        }),
+        "bmap_position_latitude": ('41.65375230' if home == 0 else MAP_LAT),
+        "bmap_position_longitude": ('123.42235582' if home == 0 else MAP_LON),
+        "bmap_position_address": ('辽宁省' if home == 0 else user_province),
+        "bmap_position_status":"0",
+        "ProvinceCode": ('210000' if home == 0 else get_province_code(user_province)),
+        "CityCode": "",
+        "travels": []
+    }
 
     current_time = str(int(time.time() * 1000))
     headers = {
@@ -141,11 +176,15 @@ def renew(sess_id, session, user_id, user_name, user_province, home = 0) -> bool
         "idnumber": getDES3Token(str(USERNAME), key = b'neusoftneusoftneusoftneu'),
         "enp": getMD5Token(getSM3Token(str(PASSWORD)) + current_time)[5:28],
         "X-Requested-With": "com.sunyt.testdemo",
-        "Referer": "https://apipay.17wanxiao.com/"
+        "Referer": "http://e-report.neu.edu.cn/mobile/notes/create",
+        "Origin": "http://e-report.neu.edu.cn",
+        "Content-Type": "application/json;charset=utf-8",
+        "X-XSRF-TOKEN": session.cookies["XSRF-TOKEN"]
     }
-    f = session.post(url, headers=headers, data=data)
+    f = session.post(url, headers=headers, data=json.dumps(data))
     f.raise_for_status()
-    if f.text.find("您的健康信息上报已成功") != -1:
+    #print(f.status_code)
+    if f.status_code != 201 and f.text.find("您的健康信息上报已成功") == -1:
         return False
     if int(credits) < 10:
         credits = str(int(credits) + 1)
