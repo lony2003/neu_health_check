@@ -1,0 +1,54 @@
+name: 'NEU Daily Health Check'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '50 0 20 * *'
+
+jobs:
+  auto_renew:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout codes'
+        uses: actions/checkout@v2
+
+      - name: 'Set python'
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.x'
+
+      - name: 'Install dependencies'
+        run: |
+          python -m pip install --upgrade requests
+          python -m pip install --upgrade beautifulsoup4
+          python -m pip install --upgrade snowland-smx
+          python -m pip install --upgrade pycryptodome
+
+      - name: 'Auto Report'
+        env:
+          USERNAME: ${{ secrets.USERNAME }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+          HOME: ${{ secrets.HOME }}
+          USER_PROVINCE: ${{ secrets.USER_PROVINCE }}
+          MAP_LON: ${{ secrets.MAP_LON }}
+          MAP_LAT: ${{ secrets.MAP_LAT }}
+        run: python e-report.py
+        
+      - name: 'Commit Files'
+        id: commit
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git diff --quiet && git diff --staged --quiet || git commit -am 'update days'
+          echo ::set-output name=status::success
+           
+      - name: 'GitHub Push'
+        if: steps.commit.output.status != 'success'
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
