@@ -9,6 +9,7 @@ import binascii
 from pysmx.SM3 import digest
 import hashlib
 import urllib.parse
+import random
 
 #snowland-smx
 #pycryptodome
@@ -32,7 +33,6 @@ def getDES3Token(text, key):
     unpad = lambda s : s[0:-ord(s[-1])]
     #注意3DES的MODE_CBC模式下只有前24位有意义
     #key和iv都需要是bytearray
-    #
     
     iv = b'01234567'
     #text也需要encode成bytearray
@@ -222,6 +222,9 @@ if __name__ == "__main__":
     if not USERNAME or not PASSWORD or not USER_PROVINCE or not MAP_LAT or not MAP_LON:
         print("参数出错，请无论如何也输入所有参数")
         exit(1)
+    sleep_time = int(600 * random.random())
+    print("延迟" + str(sleep_time) + "秒")
+    time.sleep(sleep_time)
     print("登录中。。。。")
     user_detail, s = login(USERNAME, PASSWORD)
     if user_detail == -1:
