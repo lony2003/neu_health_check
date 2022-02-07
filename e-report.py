@@ -57,6 +57,8 @@ def getMD5Token(text):
 
 def login(username, password) -> (int, requests.session):
     s = requests.Session()
+    s.mount('http://', HTTPAdapter(max_retries=5))
+    s.mount('https://', HTTPAdapter(max_retries=5))
     headers = {
         "user-agent": "okhttp/3.8.0"
     }
