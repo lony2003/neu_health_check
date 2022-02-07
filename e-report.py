@@ -10,6 +10,7 @@ from pysmx.SM3 import digest
 import hashlib
 import urllib.parse
 import random
+from requests.adapters import HTTPAdapter
 
 #snowland-smx
 #pycryptodome
