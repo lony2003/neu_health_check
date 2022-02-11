@@ -21,6 +21,8 @@ PASSWORD = os.environ["PASSWORD"]
 
 HOME = int(os.environ.get("HOME", "0"))
 
+DEBUG = int(os.environ.get("DEBUG", "0"))
+
 USER_PROVINCE = os.environ["USER_PROVINCE"]
 MAP_LON = os.environ["MAP_LON"]
 MAP_LAT = os.environ["MAP_LAT"]
@@ -68,9 +70,13 @@ def login(username, password) -> (int, requests.session):
         try:
             f = s.get(login_url, headers=headers)
         except requests.exceptions.RequestException as e:  # This is the correct syntax
+            if DEBUG == 1:
+                print("report error: {0}".format(e))
             continue
         result = json.loads(f.text)
         if result["success"] == False:
+            if DEBUG == 1:
+                print("login error")
             continue
         break
     return result, s
@@ -121,6 +127,8 @@ def renew(sess_id, session, user_id, user_name, user_province, home = 0) -> bool
         try:
             f = session.get(url)
         except requests.exceptions.RequestException as e:  # This is the correct syntax
+            if DEBUG == 1:
+                print("report error: {0}".format(e))
             continue
         break
     user_class = json.loads(f.text)["data"]["suoshubanji"]
@@ -196,8 +204,12 @@ def renew(sess_id, session, user_id, user_name, user_province, home = 0) -> bool
         try:
             f = session.post(url, headers=headers, data=json.dumps(data))
         except requests.exceptions.RequestException as e:  # This is the correct syntax
+            if DEBUG == 1:
+                print("report error: {0}".format(e))
             continue
         if f.status_code != 201 and f.text.find("您的健康信息上报已成功") == -1:
+            if DEBUG == 1:
+                print("report fail")
             continue
         if int(credits) < 10:
             credits = str(int(credits) + 1)
@@ -227,9 +239,13 @@ def get_token(s):
         try:
             f = s.get("http://e-report.neu.edu.cn/mobile/notes/create", headers=headers)
         except requests.exceptions.RequestException as e:  # This is the correct syntax
+            if DEBUG == 1:
+                print("report error: {0}".format(e))
             continue
         soup = BeautifulSoup(f.text, 'html.parser')
         if len(soup.select('input[name="_token"]')) != 1:
+            if DEBUG == 1:
+                print("no token")
             continue
         break
     return soup.select('input[name="_token"]')[0]['value']
@@ -242,7 +258,8 @@ if __name__ == "__main__":
         exit(1)
     sleep_time = int(600 * random.random())
     print("延迟" + str(sleep_time) + "秒")
-    time.sleep(sleep_time)
+    if DEBUG == 0:
+        time.sleep(sleep_time)
     print("登录中。。。。")
     user_detail, s = login(USERNAME, PASSWORD)
     if user_detail == -1:
