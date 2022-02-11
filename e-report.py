@@ -64,11 +64,15 @@ def login(username, password) -> (int, requests.session):
         "user-agent": "okhttp/3.8.0"
     }
     login_url = "https://portal.neu.edu.cn/tp_up/up/mobile/ifs/" + getDES3Token("method=userLogin&id_number=" + username + "&pwd=" + password + "&mobile_device_uuid=" + getMD5Token(str(time.time())) + "-Android&version=1.6.5", key = b'neusofteducationplatform')
-    f = s.get(login_url, headers=headers)
-    f.raise_for_status()
-    result = json.loads(f.text)
-    if result["success"] == False:
-        return -1, s
+    while 1:
+        try:
+            f = s.get(login_url, headers=headers)
+        except requests.exceptions.RequestException as e:  # This is the correct syntax
+            continue
+        result = json.loads(f.text)
+        if result["success"] == False:
+            continue
+        break
     return result, s
     
 def get_province_code(user_province):
@@ -113,8 +117,12 @@ def get_province_code(user_province):
 def renew(sess_id, session, user_id, user_name, user_province, home = 0) -> bool:
     #获取班级信息
     url = "http://e-report.neu.edu.cn/api/profiles/" + str(user_id) +"?xingming=" + urllib.parse.quote(str(user_name))
-    f = session.get(url)
-    f.raise_for_status()
+    while 1:
+        try:
+            f = session.get(url)
+        except requests.exceptions.RequestException as e:  # This is the correct syntax
+            continue
+        break
     user_class = json.loads(f.text)["data"]["suoshubanji"]
     #获取credits，记录签到了多少天
     days = open("days", "r")
@@ -184,15 +192,18 @@ def renew(sess_id, session, user_id, user_name, user_province, home = 0) -> bool
         "Content-Type": "application/json;charset=utf-8",
         "X-XSRF-TOKEN": session.cookies["XSRF-TOKEN"]
     }
-    f = session.post(url, headers=headers, data=json.dumps(data))
-    f.raise_for_status()
-    #print(f.status_code)
-    if f.status_code != 201 and f.text.find("您的健康信息上报已成功") == -1:
-        return False
-    if int(credits) < 10:
-        credits = str(int(credits) + 1)
-    else:
-        credits = str(10)
+    while 1:
+        try:
+            f = session.post(url, headers=headers, data=json.dumps(data))
+        except requests.exceptions.RequestException as e:  # This is the correct syntax
+            continue
+        if f.status_code != 201 and f.text.find("您的健康信息上报已成功") == -1:
+            continue
+        if int(credits) < 10:
+            credits = str(int(credits) + 1)
+        else:
+            credits = str(10)
+        break
     days = open("days", "w")
     days.write(credits)
     days.close()
@@ -212,11 +223,15 @@ def get_token(s):
         "X-Requested-With": "com.sunyt.testdemo",
         "Referer": "https://apipay.17wanxiao.com/"
     }
-    f = s.get("http://e-report.neu.edu.cn/mobile/notes/create", headers=headers)
-    f.raise_for_status()
-    soup = BeautifulSoup(f.text, 'html.parser')
-    if len(soup.select('input[name="_token"]')) != 1:
-        return -1
+    while 1:
+        try:
+            f = s.get("http://e-report.neu.edu.cn/mobile/notes/create", headers=headers)
+        except requests.exceptions.RequestException as e:  # This is the correct syntax
+            continue
+        soup = BeautifulSoup(f.text, 'html.parser')
+        if len(soup.select('input[name="_token"]')) != 1:
+            continue
+        break
     return soup.select('input[name="_token"]')[0]['value']
     
 
@@ -232,16 +247,16 @@ if __name__ == "__main__":
     user_detail, s = login(USERNAME, PASSWORD)
     if user_detail == -1:
         print("登录失败，请检查用户名和密码")
-        exit(0)
+        exit(-1)
     user_name = user_detail["message"]["USER_NAME"]
     print("登陆成功，正在签到。。。。")
     token = get_token(s)
     if token == -1:
         print("未知错误，请联系作者")
-        exit(0)
+        exit(-1)
     result = renew(token, s, USERNAME, user_name, USER_PROVINCE, HOME)
     if not result:
         print("未知错误，请联系作者")
-        exit(0)
+        exit(-1)
     print("签到成功，感谢使用")
     print('*' * 30)
