@@ -35,6 +35,7 @@ jobs:
           USER_PROVINCE: ${{ secrets.USER_PROVINCE }}
           MAP_LON: ${{ secrets.MAP_LON }}
           MAP_LAT: ${{ secrets.MAP_LAT }}
+          DEBUG: ${{ secrets.DEBUG }}
         run: python e-report.py
         
       - name: 'Commit Files'
