@@ -66,7 +66,8 @@ def login(username, password) -> (int, requests.session):
         "user-agent": "okhttp/3.8.0"
     }
     login_url = "https://portal.neu.edu.cn/tp_up/up/mobile/ifs/" + getDES3Token("method=userLogin&id_number=" + username + "&pwd=" + password + "&mobile_device_uuid=" + getMD5Token(str(time.time())) + "-Android&version=1.6.5", key = b'neusofteducationplatform')
-    while 1:
+    while_continue = 1
+    while while_continue == 1:
         try:
             f = s.get(login_url, headers=headers)
         except requests.exceptions.RequestException as e:  # This is the correct syntax
@@ -78,7 +79,7 @@ def login(username, password) -> (int, requests.session):
             if DEBUG == 1:
                 print("login error")
             continue
-        break
+        while_continue = 0
     return result, s
     
 def get_province_code(user_province):
@@ -123,14 +124,15 @@ def get_province_code(user_province):
 def renew(sess_id, session, user_id, user_name, user_province, home = 0) -> bool:
     #获取班级信息
     url = "http://e-report.neu.edu.cn/api/profiles/" + str(user_id) +"?xingming=" + urllib.parse.quote(str(user_name))
-    while 1:
+    while_continue = 1
+    while while_continue == 1:
         try:
             f = session.get(url)
         except requests.exceptions.RequestException as e:  # This is the correct syntax
             if DEBUG == 1:
                 print("report error: {0}".format(e))
             continue
-        break
+        while_continue = 0
     user_class = json.loads(f.text)["data"]["suoshubanji"]
     #获取credits，记录签到了多少天
     days = open("days", "r")
@@ -200,7 +202,8 @@ def renew(sess_id, session, user_id, user_name, user_province, home = 0) -> bool
         "Content-Type": "application/json;charset=utf-8",
         "X-XSRF-TOKEN": session.cookies["XSRF-TOKEN"]
     }
-    while 1:
+    while_continue = 1
+    while while_continue == 1:
         try:
             f = session.post(url, headers=headers, data=json.dumps(data))
         except requests.exceptions.RequestException as e:  # This is the correct syntax
@@ -215,7 +218,7 @@ def renew(sess_id, session, user_id, user_name, user_province, home = 0) -> bool
             credits = str(int(credits) + 1)
         else:
             credits = str(10)
-        break
+        while_continue = 0
     days = open("days", "w")
     days.write(credits)
     days.close()
@@ -235,7 +238,8 @@ def get_token(s):
         "X-Requested-With": "com.sunyt.testdemo",
         "Referer": "https://apipay.17wanxiao.com/"
     }
-    while 1:
+    while_continue = 1
+    while while_continue == 1:
         try:
             f = s.get("http://e-report.neu.edu.cn/mobile/notes/create", headers=headers)
         except requests.exceptions.RequestException as e:  # This is the correct syntax
@@ -247,7 +251,7 @@ def get_token(s):
             if DEBUG == 1:
                 print("no token")
             continue
-        break
+        while_continue = 0
     return soup.select('input[name="_token"]')[0]['value']
     
 
