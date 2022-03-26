@@ -250,7 +250,6 @@ def get_token(s):
         if len(soup.select('input[name="_token"]')) != 1:
             if DEBUG == 1:
                 print("no token")
-            continue
         while_continue = 0
     return soup.select('input[name="_token"]')[0]['value']
     
