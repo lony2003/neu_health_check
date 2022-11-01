@@ -11,6 +11,7 @@ import hashlib
 import urllib.parse
 import random
 from requests.adapters import HTTPAdapter
+import uuid
 
 #snowland-smx
 #pycryptodome
@@ -135,9 +136,7 @@ def renew(sess_id, session, user_id, user_name, user_province, home = 0) -> bool
         while_continue = 0
     user_class = json.loads(f.text)["data"]["suoshubanji"]
     #获取credits，记录签到了多少天
-    days = open("days", "r")
-    credits = days.read()
-    days.close()
+    credits = 10
 
     url = "http://e-report.neu.edu.cn/api/notes"
 
@@ -219,9 +218,6 @@ def renew(sess_id, session, user_id, user_name, user_province, home = 0) -> bool
         else:
             credits = str(10)
         while_continue = 0
-    days = open("days", "w")
-    days.write(credits)
-    days.close()
 
     return True
     
@@ -279,4 +275,9 @@ if __name__ == "__main__":
         print("未知错误，请联系作者")
         exit(-1)
     print("签到成功，感谢使用")
+
+    days = open("days", "w")
+    days.write(uuid.uuid4())
+    days.close()
+
     print('*' * 30)
