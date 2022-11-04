@@ -60,7 +60,7 @@ def getMD5Token(text):
     return hashlib.md5(text.encode(encoding="UTF-8")).hexdigest().upper()
 
 
-def login(username, password) -> Tuple(int, requests.session):
+def login(username, password) -> Tuple[int, requests.session]:
     s = requests.Session()
     s.mount('http://', HTTPAdapter(max_retries=5))
     s.mount('https://', HTTPAdapter(max_retries=5))
