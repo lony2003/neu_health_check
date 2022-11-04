@@ -1,8 +1,8 @@
 import os
 import json
 import time
-import requests
 from typing import Tuple
+import requests
 from bs4 import BeautifulSoup
 from Crypto.Cipher import DES3
 import base64
@@ -125,11 +125,11 @@ def get_province_code(user_province):
 
 def renew(sess_id, session, user_id, user_name, user_province, home = 0) -> bool:
     #获取班级信息
-    url = "http://e-report.neu.edu.cn/api/profiles/" + str(user_id) +"?xingming=" + urllib.parse.quote(str(user_name))
+    url = "https://webvpn.neu.edu.cn/https/77726476706e69737468656265737421f5ba5399373f7a4430068cb9d6502720645809/api/profiles/" + str(user_id) +"?xingming=" + urllib.parse.quote(str(user_name))
     while_continue = 1
     while while_continue == 1:
         try:
-            f = session.get(url)
+            f = session.get(url, verify=False)
         except requests.exceptions.RequestException as e:  # This is the correct syntax
             if DEBUG == 1:
                 print("report error: {0}".format(e))
@@ -139,7 +139,7 @@ def renew(sess_id, session, user_id, user_name, user_province, home = 0) -> bool
     #获取credits，记录签到了多少天
     credits = 10
 
-    url = "http://e-report.neu.edu.cn/api/notes"
+    url = "https://webvpn.neu.edu.cn/https/77726476706e69737468656265737421f5ba5399373f7a4430068cb9d6502720645809/api/notes"
 
     #json参数拼接   
     data = {
@@ -188,6 +188,9 @@ def renew(sess_id, session, user_id, user_name, user_province, home = 0) -> bool
     }
 
     current_time = str(int(time.time() * 1000))
+
+    print(session.cookies)
+
     headers = {
         "User-Agent":"Mozilla/5.0 (Linux; Android 11; KB2000 Build/RP1A.201005.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/87.0.4280.141 Mobile Safari/537.36",
         "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -197,15 +200,15 @@ def renew(sess_id, session, user_id, user_name, user_province, home = 0) -> bool
         "idnumber": getDES3Token(str(USERNAME), key = b'neusoftneusoftneusoftneu'),
         "enp": getMD5Token(getSM3Token(str(PASSWORD)) + current_time)[5:28],
         "X-Requested-With": "com.sunyt.testdemo",
-        "Referer": "http://e-report.neu.edu.cn/mobile/notes/create",
-        "Origin": "http://e-report.neu.edu.cn",
+        "Referer": "https://webvpn.neu.edu.cn/https/77726476706e69737468656265737421f5ba5399373f7a4430068cb9d6502720645809/mobile/notes/create",
+        "Origin": "https://webvpn.neu.edu.cn/https/77726476706e69737468656265737421f5ba5399373f7a4430068cb9d6502720645809",
         "Content-Type": "application/json;charset=utf-8",
-        "X-XSRF-TOKEN": session.cookies["XSRF-TOKEN"]
+        # "X-XSRF-TOKEN": session.cookies["XSRF-TOKEN"]
     }
     while_continue = 1
     while while_continue == 1:
         try:
-            f = session.post(url, headers=headers, data=json.dumps(data))
+            f = session.post(url, headers=headers, data=json.dumps(data), verify=False)
         except requests.exceptions.RequestException as e:  # This is the correct syntax
             if DEBUG == 1:
                 print("report error: {0}".format(e))
@@ -238,15 +241,11 @@ def get_token(s):
     while_continue = 1
     while while_continue == 1:
         try:
-            f = s.get("https://webvpn.neu.edu.cn/https/77726476706e69737468656265737421f5ba5399373f7a4430068cb9d6502720645809/mobile/notes/create", headers=headers)
-        except requests.exceptions.SSLError:
-            pass
+            f = s.get("https://webvpn.neu.edu.cn/https/77726476706e69737468656265737421f5ba5399373f7a4430068cb9d6502720645809/mobile/notes/create", headers=headers, verify=False)
         except requests.exceptions.RequestException as e:  # This is the correct syntax
             if DEBUG == 1:
                 print("report error: {0}".format(e))
             continue
-        print(f.text)
-        exit(0)
         soup = BeautifulSoup(f.text, 'html.parser')
         if len(soup.select('input[name="_token"]')) != 1:
             if DEBUG == 1:
@@ -258,6 +257,7 @@ def get_token(s):
 
 
 if __name__ == "__main__":
+
     if not USERNAME or not PASSWORD or not USER_PROVINCE or not MAP_LAT or not MAP_LON:
         print("参数出错，请无论如何也输入所有参数")
         exit(1)
@@ -283,7 +283,7 @@ if __name__ == "__main__":
     print("签到成功，感谢使用")
 
     days = open("days", "w")
-    days.write(uuid.uuid4())
+    days.write(str(uuid.uuid4()))
     days.close()
 
     print('*' * 30)
