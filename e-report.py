@@ -189,7 +189,6 @@ def renew(sess_id, session, user_id, user_name, user_province, home = 0) -> bool
 
     current_time = str(int(time.time() * 1000))
 
-    print(session.cookies)
 
     headers = {
         "User-Agent":"Mozilla/5.0 (Linux; Android 11; KB2000 Build/RP1A.201005.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/87.0.4280.141 Mobile Safari/537.36",
