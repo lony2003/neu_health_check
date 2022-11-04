@@ -2,6 +2,7 @@ import os
 import json
 import time
 import requests
+from typing import Tuple
 from bs4 import BeautifulSoup
 from Crypto.Cipher import DES3
 import base64
@@ -59,7 +60,7 @@ def getMD5Token(text):
     return hashlib.md5(text.encode(encoding="UTF-8")).hexdigest().upper()
 
 
-def login(username, password) -> tuple(int, requests.session):
+def login(username, password) -> Tuple(int, requests.session):
     s = requests.Session()
     s.mount('http://', HTTPAdapter(max_retries=5))
     s.mount('https://', HTTPAdapter(max_retries=5))
