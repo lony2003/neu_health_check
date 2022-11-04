@@ -238,7 +238,9 @@ def get_token(s):
     while_continue = 1
     while while_continue == 1:
         try:
-            f = s.get("https://webvpn.neu.edu.cn/https/77726476706e69737468656265737421f5ba5399373f7a4430068cb9d6502720645809/mobile/notes/create", headers=headers, verify=False)
+            f = s.get("https://webvpn.neu.edu.cn/https/77726476706e69737468656265737421f5ba5399373f7a4430068cb9d6502720645809/mobile/notes/create", headers=headers)
+        except requests.exceptions.SSLError:
+            pass
         except requests.exceptions.RequestException as e:  # This is the correct syntax
             if DEBUG == 1:
                 print("report error: {0}".format(e))
