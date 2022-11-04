@@ -59,7 +59,7 @@ def getMD5Token(text):
     return hashlib.md5(text.encode(encoding="UTF-8")).hexdigest().upper()
 
 
-def login(username, password) -> (int, requests.session):
+def login(username, password) -> tuple(int, requests.session):
     s = requests.Session()
     s.mount('http://', HTTPAdapter(max_retries=5))
     s.mount('https://', HTTPAdapter(max_retries=5))
@@ -237,11 +237,13 @@ def get_token(s):
     while_continue = 1
     while while_continue == 1:
         try:
-            f = s.get("http://e-report.neu.edu.cn/mobile/notes/create", headers=headers)
+            f = s.get("https://webvpn.neu.edu.cn/https/77726476706e69737468656265737421f5ba5399373f7a4430068cb9d6502720645809/mobile/notes/create", headers=headers)
         except requests.exceptions.RequestException as e:  # This is the correct syntax
             if DEBUG == 1:
                 print("report error: {0}".format(e))
             continue
+        print(f.text)
+        exit(0)
         soup = BeautifulSoup(f.text, 'html.parser')
         if len(soup.select('input[name="_token"]')) != 1:
             if DEBUG == 1:
